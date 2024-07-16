@@ -13,7 +13,7 @@ namespace SalesWebMVc
                 var connectionString = builder.Configuration.GetConnectionString("SalesWebMVcContext")
                                         ?? throw new InvalidOperationException("Connection string 'SalesWebMVcContext' not found.");
 
-                var serverVersion = new MySqlServerVersion(new Version(8, 0, 2)); // Exemplo: MySQL 8.0.28
+                var serverVersion = new MySqlServerVersion(new Version(8, 0, 2)); // Exemplo: MySQL 8.0.2
 
                 options.UseMySql(connectionString, serverVersion, mySqlOptions =>
                     mySqlOptions.MigrationsAssembly("SalesWebMVc") // Passe o nome do Assembly diretamente
@@ -22,8 +22,17 @@ namespace SalesWebMVc
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            //Add a scope for SeedingService
+            builder.Services.AddScoped<SeedingService>();
 
             var app = builder.Build();
+            //Populate the database
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var seedingService = services.GetRequiredService<SeedingService>();
+                seedingService.Seed();
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -32,6 +41,8 @@ namespace SalesWebMVc
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            
+
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
