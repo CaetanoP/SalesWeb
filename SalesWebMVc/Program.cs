@@ -9,7 +9,16 @@ namespace SalesWebMVc
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<SalesWebMVcContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SalesWebMVcContext") ?? throw new InvalidOperationException("Connection string 'SalesWebMVcContext' not found.")));
+            {
+                var connectionString = builder.Configuration.GetConnectionString("SalesWebMVcContext")
+                                        ?? throw new InvalidOperationException("Connection string 'SalesWebMVcContext' not found.");
+
+                var serverVersion = new MySqlServerVersion(new Version(8, 0, 2)); // Exemplo: MySQL 8.0.28
+
+                options.UseMySql(connectionString, serverVersion, mySqlOptions =>
+                    mySqlOptions.MigrationsAssembly("SalesWebMVc") // Passe o nome do Assembly diretamente
+                );
+            });
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
