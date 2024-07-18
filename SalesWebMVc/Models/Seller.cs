@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
-        public double BaseSalay { get; set; }
+        public double BaseSalary { get; set; }
         public DateTime BirthDate { get; set; }
         public Department Department { get; set; }
         public ICollection<SalesRecord> Sales { get; set; } = new List<SalesRecord>();
@@ -16,12 +16,12 @@
             
         }
 
-        public Seller(int id, string name, string email, DateTime birthDate, double baseSalay, Department department)
+        public Seller(int id, string name, string email, DateTime birthDate, double baseSalary, Department department)
         {
             Id = id;
             Name = name;
             Email = email;
-            BaseSalay = baseSalay;
+            BaseSalary = baseSalary;
             BirthDate = birthDate;
             Department = department;
         }

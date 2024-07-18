@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SalesWebMVc.Data;
+using SalesWebMVc.Services;
 namespace SalesWebMVc
 {
     public class Program
@@ -24,8 +25,10 @@ namespace SalesWebMVc
             builder.Services.AddControllersWithViews();
             //Add a scope for SeedingService
             builder.Services.AddScoped<SeedingService>();
+			//Add a scope for SellerService
+			builder.Services.AddScoped<SellerService>();
 
-            var app = builder.Build();
+			var app = builder.Build();
             //Populate the database
             using (var scope = app.Services.CreateScope())
             {
@@ -34,8 +37,8 @@ namespace SalesWebMVc
                 seedingService.Seed();
             }
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+			// Configure the HTTP request pipeline.
+			if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
