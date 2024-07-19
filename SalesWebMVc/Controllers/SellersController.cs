@@ -2,12 +2,15 @@
 using SalesWebMVc.Models;
 using SalesWebMVc.Models.ViewModels;
 using SalesWebMVc.Services;
+using SalesWebMVc.Services.Exceptions;
 
 namespace SalesWebMVc.Controllers
 {
 	public class SellersController : Controller
 	{
-
+		//The Sellers Controller makes the interface between the View and the Model
+		//MVC pattern!!
+		//receives the data from the view and sends it to the model
 		private readonly SellerService _sellerService;
 		private readonly DepartmentService _departmentService;
 
@@ -71,6 +74,43 @@ namespace SalesWebMVc.Controllers
 				return NotFound();
 			}
 			return View(obj);
+		}
+		public IActionResult Edit(int? id)
+		{
+			if (id == null)
+			{
+				return NotFound();
+			}
+			var obj = _sellerService.FindById(id.Value);
+			if (obj == null)
+			{
+				return NotFound();
+			}
+			List<Department> departments = _departmentService.FindAll();
+			SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
+			return View(viewModel);
+		}
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public IActionResult Edit(int id, Seller seller)
+		{
+			if (id != seller.Id)
+			{
+				return BadRequest();
+			}
+			try
+			{
+				_sellerService.Update(seller);
+				return RedirectToAction(nameof(Index));
+			}
+			catch (NotFoundException e)
+			{
+				return NotFound();
+			}
+			catch (DbConcurrencyException e)
+			{
+				return BadRequest();
+			}
 		}
 	}
 }
