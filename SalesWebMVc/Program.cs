@@ -27,6 +27,9 @@ namespace SalesWebMVc
             builder.Services.AddScoped<SeedingService>();
 			//Add a scope for SellerService
 			builder.Services.AddScoped<SellerService>();
+            //Add a scope for DepartmentService
+            builder.Services.AddScoped<DepartmentService>();
+
 
 			var app = builder.Build();
             //Populate the database
