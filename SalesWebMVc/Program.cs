@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using SalesWebMVc.Data;
 using SalesWebMVc.Services;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 namespace SalesWebMVc
 {
     public class Program
@@ -43,6 +45,22 @@ namespace SalesWebMVc
 			// Configure the HTTP request pipeline.
 			if (!app.Environment.IsDevelopment())
             {
+                //set the culture to en-US
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("en-US"),
+                    new CultureInfo("pt-BR"),
+                };
+                var localizationOptions = new RequestLocalizationOptions
+                {
+                    DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US"),
+                    SupportedCultures = supportedCultures,
+                    SupportedUICultures = supportedCultures
+                };
+               //Use the localization options
+               app.UseRequestLocalization(localizationOptions);
+
+
                 app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
