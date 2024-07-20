@@ -18,8 +18,8 @@ namespace SalesWebMVc.Controllers
 		[SwaggerOperation(Summary = "Obter informações da página inicial")]
 		public IActionResult Index()
 		{
-			var email = "caetanof2004@gmail.com";
-			return Ok(new { Email = email }); // Retorna um objeto JSON com o email
+			var response = "This is a website developed by Dante and Kapo";
+			return Ok(new { Body = response }); // Retorna um objeto JSON com o Body
 		}
 	}
 }

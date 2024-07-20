@@ -2,7 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using SalesWebMVc.Data;
 using SalesWebMVc.Models;
+using SalesWebMVc.Responses.DepartmentResponses;
+using SalesWebMVc.Requests;
 using Swashbuckle.AspNetCore.Annotations; // Importar para usar os atributos do Swagger
+using SalesWebMVc.Services;
 
 namespace SalesWebMVc.Controllers
 {
@@ -11,86 +14,64 @@ namespace SalesWebMVc.Controllers
 	public class DepartmentsController : ControllerBase
 	{
 		private readonly SalesWebMVcContext _context;
-
-		public DepartmentsController(SalesWebMVcContext context)
+		private readonly DepartmentService _departmentService;
+		public DepartmentsController(SalesWebMVcContext context, DepartmentService departmentService)
 		{
 			_context = context;
+			_departmentService = departmentService;
 		}
 
 		[HttpGet]
 		[SwaggerOperation(Summary = "Obter todos os departamentos")]
-		public async Task<ActionResult<IEnumerable<Department>>> Index()
+		[SwaggerResponse(200, "Departamentos encontrados", typeof(DepartmentResponseJson))]
+		[SwaggerResponse(404, "Nenhum departamento encontrado")]
+		public async Task<ActionResult<IEnumerable<DepartmentResponseJson>>> Index()
 		{
-			return await _context.Department.ToListAsync();
+			var response =await _departmentService.FindAllAsync();
+
+			return response;
 		}
 
 		[HttpGet("{id}")]
 		[SwaggerOperation(Summary = "Obter detalhes de um departamento")]
-		public async Task<ActionResult<Department>> Details(int id)
+		[SwaggerResponse(200, "Departamento encontrado", typeof(DepartmentResponseJson))]
+		[SwaggerResponse(404, "Departamento não encontrado")]
+		public async Task<ActionResult<DepartmentResponseJson>> Details(int id)
 		{
-			var department = await _context.Department.FindAsync(id);
+			var response = await _departmentService.FindByIdAsync(id);
 
-			if (department == null)
-			{
-				return NotFound();
-			}
-
-			return department;
+			return response;
 		}
 
 		[HttpPost]
 		[SwaggerOperation(Summary = "Criar um novo departamento")]
-		public async Task<ActionResult<Department>> Create(Department department)
+		[SwaggerResponse(201, "Departamento criado", typeof(DepartmentResponseJson))]
+		public async Task<ActionResult<Department>> Create(DepartmentRequestJson departmentRequest)
 		{
-			_context.Department.Add(department);
-			await _context.SaveChangesAsync();
+			var department = new Department(departmentRequest.Id, departmentRequest.Name);
+
+			await _departmentService.CreateAsync(department);
 
 			return CreatedAtAction("GetDepartment", new { id = department.Id }, department);
 		}
 
-		[HttpPut("{id}")]
+		[HttpPut]
 		[SwaggerOperation(Summary = "Atualizar um departamento existente")]
-		public async Task<IActionResult> Edit(int id, Department department)
+		[SwaggerResponse(204, "Departamento atualizado")]
+		[SwaggerResponse(400, "Id do departamento inválido")]
+		public async Task<IActionResult> Edit(DepartmentRequestJson departmentRequest)
 		{
-			if (id != department.Id)
-			{
-				return BadRequest();
-			}
-
-			_context.Entry(department).State = EntityState.Modified;
-
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!DepartmentExists(id))
-				{
-					return NotFound();
-				}
-				else
-				{
-					throw;
-				}
-			}
-
+			var department = new Department(departmentRequest.Id, departmentRequest.Name);
+			await _departmentService.UpdateAsync(department);
 			return NoContent();
 		}
 
 		[HttpDelete("{id}")]
 		[SwaggerOperation(Summary = "Excluir um departamento")]
+		[SwaggerResponse(204, "Departamento excluído")]
 		public async Task<IActionResult> Delete(int id)
 		{
-			var department = await _context.Department.FindAsync(id);
-			if (department == null)
-			{
-				return NotFound();
-			}
-
-			_context.Department.Remove(department);
-			await _context.SaveChangesAsync();
-
+			await _departmentService.RemoveAsync(id);
 			return NoContent();
 		}
 
