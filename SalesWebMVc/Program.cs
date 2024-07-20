@@ -31,6 +31,8 @@ namespace SalesWebMVc
 			builder.Services.AddScoped<SellerService>();
             //Add a scope for DepartmentService
             builder.Services.AddScoped<DepartmentService>();
+            //Add a scope for SalesRecordService
+            builder.Services.AddScoped<SalesRecordService>();
 
 
 			var app = builder.Build();
