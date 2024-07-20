@@ -36,9 +36,17 @@ namespace SalesWebMVc.Services
 		}
 		public async Task RemoveAsync(int id)
 		{
-			var obj = await _context.Seller.FindAsync(id);
-			_context.Seller.Remove(obj);
-			_context.SaveChangesAsync();
+			try
+			{
+
+				var obj = await _context.Seller.FindAsync(id);
+				_context.Seller.Remove(obj);
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException e)
+			{
+				throw new IntegrityException(e.Message);
+			}
 		}
 		public async Task UpdateAsync(Seller obj)
 		{
@@ -52,7 +60,7 @@ namespace SalesWebMVc.Services
 				_context.Update(obj);
 				await _context.SaveChangesAsync();
 			}
-			catch(DbUpdateConcurrencyException e)
+			catch (DbUpdateConcurrencyException e)
 			{
 				//This exception is thrown when there is a concurrency problem
 				//A concurrency problem is when two threads try to update the same data at the same time
