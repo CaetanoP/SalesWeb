@@ -1,87 +1,102 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SalesWebMVc.Data;
 using SalesWebMVc.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
-namespace SalesWebMVc
+using Microsoft.OpenApi.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<SalesWebMVcContext>(options =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<SalesWebMVcContext>(options =>
-            {
-                var connectionString = builder.Configuration.GetConnectionString("SalesWebMVcContext")
-                                        ?? throw new InvalidOperationException("Connection string 'SalesWebMVcContext' not found.");
+	var connectionString = builder.Configuration.GetConnectionString("SalesWebMVcContext")
+							?? throw new InvalidOperationException("Connection string 'SalesWebMVcContext' not found.");
 
-                var serverVersion = new MySqlServerVersion(new Version(8, 0, 2)); // Exemplo: MySQL 8.0.2
+	var serverVersion = new MySqlServerVersion(new Version(8, 0, 2));
 
-                options.UseMySql(connectionString, serverVersion, mySqlOptions =>
-                    mySqlOptions.MigrationsAssembly("SalesWebMVc") // Passe o nome do Assembly diretamente
-                );
-            });
+	options.UseMySql(connectionString, serverVersion, mySqlOptions =>
+		mySqlOptions.MigrationsAssembly("SalesWebMVc")
+	);
+});
 
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
-            //Add a scope for SeedingService
-            builder.Services.AddScoped<SeedingService>();
-			//Add a scope for SellerService
-			builder.Services.AddScoped<SellerService>();
-            //Add a scope for DepartmentService
-            builder.Services.AddScoped<DepartmentService>();
-            //Add a scope for SalesRecordService
-            builder.Services.AddScoped<SalesRecordService>();
+// Configuração do CORS
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowSpecificOrigin", builder =>
+	{
+		builder.WithOrigins("http://localhost:3000") // Substitua pela URL do seu front-end
+			   .AllowAnyHeader()
+			   .AllowAnyMethod();
+	});
+});
 
+// Configuração do Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+	c.SwaggerDoc("v1", new OpenApiInfo { Title = "SalesWebMVc API", Version = "v1" });
+	c.EnableAnnotations();
+});
 
-			var app = builder.Build();
-            //Populate the database
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var seedingService = services.GetRequiredService<SeedingService>();
-                seedingService.Seed();
-            }
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<SeedingService>();
+builder.Services.AddScoped<SellerService>();
+builder.Services.AddScoped<DepartmentService>();
+builder.Services.AddScoped<SalesRecordService>();
 
-			// Configure the HTTP request pipeline.
-			if (!app.Environment.IsDevelopment())
-            {
-                //set the culture to en-US
-                var supportedCultures = new[]
-                {
-                    new CultureInfo("en-US"),
-                    new CultureInfo("pt-BR"),
-                };
-                var localizationOptions = new RequestLocalizationOptions
-                {
-                    DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US"),
-                    SupportedCultures = supportedCultures,
-                    SupportedUICultures = supportedCultures
-                };
-               //Use the localization options
-               app.UseRequestLocalization(localizationOptions);
+var app = builder.Build();
 
-
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-            
-
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-
-            app.Run();
-        }
-    }
+// Populate the database
+using (var scope = app.Services.CreateScope())
+{
+	var services = scope.ServiceProvider;
+	var seedingService = services.GetRequiredService<SeedingService>();
+	seedingService.Seed();
 }
+
+if (app.Environment.IsDevelopment())
+{
+	// Configuração de localização para desenvolvimento (opcional)
+	var supportedCultures = new[]
+	{
+		new CultureInfo("en-US"),
+		new CultureInfo("pt-BR"),
+	};
+	var localizationOptions = new RequestLocalizationOptions
+	{
+		DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US"),
+		SupportedCultures = supportedCultures,
+		SupportedUICultures = supportedCultures
+	};
+	app.UseRequestLocalization(localizationOptions);
+}
+else
+{
+	app.UseExceptionHandler("/Home/Error"); // Configuração de erro para produção
+	app.UseHsts(); // Configuração de HSTS para produção
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseCors("AllowSpecificOrigin"); // Habilitar CORS
+
+// Habilitar o Swagger em ambiente de desenvolvimento
+if (app.Environment.IsDevelopment())
+{
+	app.UseSwagger();
+	app.UseSwaggerUI(c =>
+	{
+		c.SwaggerEndpoint("/swagger/v1/swagger.json", "SalesWebMVc API V1");
+		c.RoutePrefix = string.Empty; // Corrige a rota do SwaggerUI
+	});
+}
+
+app.UseAuthorization();
+
+// Configuração de rotas para MVC (opcional)
+app.MapControllerRoute(
+	name: "default",
+	pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();

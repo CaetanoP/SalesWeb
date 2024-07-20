@@ -1,17 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SalesWebMVc.Models;
-using SalesWebMVc.Models.ViewModels;
 using SalesWebMVc.Services;
+using SalesWebMVc.Models.ViewModels;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using SalesWebMVc.Services.Exceptions;
 using System.Diagnostics;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SalesWebMVc.Controllers
 {
-	public class SellersController : Controller
+	[ApiController]
+	[Route("api/[controller]")]
+	public class SellersController : ControllerBase
 	{
-		//The Sellers Controller makes the interface between the View and the Model
-		//MVC pattern!!
-		//receives the data from the view and sends it to the model
 		private readonly SellerService _sellerService;
 		private readonly DepartmentService _departmentService;
 
@@ -20,128 +22,80 @@ namespace SalesWebMVc.Controllers
 			_sellerService = sellerService;
 			_departmentService = departmentService;
 		}
-		public async Task<IActionResult> Index()
+
+		[HttpGet] // Lista todos os vendedores
+		[SwaggerOperation(Summary = "Obter todos os vendedores")]
+		public async Task<ActionResult<IEnumerable<Seller>>> Index()
 		{
 			var list = await _sellerService.FindAllAsync();
-			//Returning the list to the view in the form of a model
-			return View(list);
+			return Ok(list);
 		}
-		public async Task<IActionResult> Create()
+
+		[HttpGet("{id}")] // Detalhes de um vendedor por ID
+		[SwaggerOperation(Summary = "Obter detalhes de um vendedor")]
+		public async Task<ActionResult<Seller>> Details(int id)
 		{
-			var departments = await _departmentService.FindAllAsync();
-			var viewModel = new SellerFormViewModel { Departments = departments };
-			//this create returns the view with the form to insert the data
-			return View(viewModel);
+			var obj = await _sellerService.FindByIdAsync(id);
+			if (obj == null)
+			{
+				return NotFound(); // Retorna 404 Not Found
+			}
+			return Ok(obj);
 		}
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(Seller seller)
+
+		[HttpPost] // Criar um novo vendedor
+		[SwaggerOperation(Summary = "Criar um novo vendedor")]
+		public async Task<ActionResult<Seller>> Create(Seller seller)
 		{
 			if (!ModelState.IsValid)
 			{
-				var departments = await _departmentService.FindAllAsync();
-				var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
-				return View(viewModel);
+				return BadRequest(ModelState); // Retorna 400 Bad Request
 			}
-			//this create is to insert the data
 			await _sellerService.InsertAsync(seller);
-			return RedirectToAction(nameof(Index));
+			return CreatedAtAction(nameof(Details), new { id = seller.Id }, seller);
 		}
 
-		public async Task<IActionResult> Delete(int? id)
-		{
-			if (id == null)
-			{
-				return RedirectToAction(nameof(Error), new { message = "Id not provided" });
-			}
-			var obj = await _sellerService.FindByIdAsync(id.Value);
-			if (obj == null)
-			{
-				return RedirectToAction(nameof(Error), new { message = "Id not found" });
-			}
-			return View(obj);
-		}
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Delete(int id)
-		{
-			try
-			{
-
-				await _sellerService.RemoveAsync(id);
-				return RedirectToAction(nameof(Index));
-			}
-			catch (IntegrityException e)
-			{
-				return RedirectToAction(nameof(Error), new { message = e.Message });
-			}
-		}
-
-		public async Task<IActionResult> Details(int? id)
-		{
-			if (id == null)
-			{
-				return RedirectToAction(nameof(Error), new { message = "Id not provided" });
-			}
-			var obj = await _sellerService.FindByIdAsync(id.Value);
-			if (obj == null)
-			{
-				return RedirectToAction(nameof(Error), new { message = "Id not found" });
-			}
-			return View(obj);
-		}
-		public async Task<IActionResult> Edit(int? id)
-		{
-			if (id == null)
-			{
-				return RedirectToAction(nameof(Error), new { message = "Id not provided" });
-			}
-			var obj = await _sellerService.FindByIdAsync(id.Value);
-			if (obj == null)
-			{
-				return RedirectToAction(nameof(Error), new { message = "Id not found" });
-			}
-			List<Department> departments = await _departmentService.FindAllAsync();
-			SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
-			return View(viewModel);
-		}
-		[HttpPost]
-		[ValidateAntiForgeryToken]
+		[HttpPut("{id}")] // Editar um vendedor existente
+		[SwaggerOperation(Summary = "Atualizar um vendedor existente")]
 		public async Task<IActionResult> Edit(int id, Seller seller)
 		{
 			if (!ModelState.IsValid)
 			{
-				var departments = await _departmentService.FindAllAsync();
-				var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
-				return View(viewModel);
+				return BadRequest(ModelState); // Retorna 400 Bad Request
 			}
 			if (id != seller.Id)
 			{
-				return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
+				return BadRequest(); // Retorna 400 Bad Request
 			}
 			try
 			{
-				await _sellerService.UpdateAsync(seller);
-				return RedirectToAction(nameof(Index));
+				var existingSeller = await _sellerService.FindByIdAsync(id);
+				if (existingSeller == null)
+				{
+					return NotFound(); // Retorna 404 Not Found
+				}
+				await _sellerService.UpdateAsync(existingSeller); // Passar o vendedor existente atualizado
+				return NoContent(); // Retorna 204 No Content
 			}
-			catch (NotFoundException e)
+			catch (DbUpdateConcurrencyException)
 			{
-				return RedirectToAction(nameof(Error), new { message = e.Message });
-			}
-			catch (DbConcurrencyException e)
-			{
-				return RedirectToAction(nameof(Error), new { message = e.Message });
+				throw; // Deixe o Entity Framework lidar com a exceção de concorrência
 			}
 		}
 
-		public IActionResult Error(string message)
+		[HttpDelete("{id}")] // Excluir um vendedor
+		[SwaggerOperation(Summary = "Excluir um vendedor")]
+		public async Task<IActionResult> Delete(int id)
 		{
-			var viewModel = new ErrorViewModel
+			try
 			{
-				Message = message,
-				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-			};
-			return View(viewModel);
+				await _sellerService.RemoveAsync(id);
+				return NoContent(); // Retorna 204 No Content
+			}
+			catch (IntegrityException e)
+			{
+				return StatusCode(500, e.Message); // Retorna 500 Internal Server Error
+			}
 		}
 	}
 }

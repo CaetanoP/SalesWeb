@@ -1,33 +1,25 @@
 using Microsoft.AspNetCore.Mvc;
-using SalesWebMVc.Models;
-using System.Diagnostics;
-using SalesWebMVc.Models.ViewModels;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SalesWebMVc.Controllers
 {
-    public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
+	[ApiController]
+	[Route("api/[controller]")]
+	public class HomeController : ControllerBase
+	{
+		private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+		public HomeController(ILogger<HomeController> logger)
+		{
+			_logger = logger;
+		}
 
-        public IActionResult Index()
-        {
-            ViewData["email"] = "caetanof2004@gmail.com";
-            return View();
-        }
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-    }
+		[HttpGet]
+		[SwaggerOperation(Summary = "Obter informações da página inicial")]
+		public IActionResult Index()
+		{
+			var email = "caetanof2004@gmail.com";
+			return Ok(new { Email = email }); // Retorna um objeto JSON com o email
+		}
+	}
 }
