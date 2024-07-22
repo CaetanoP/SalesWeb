@@ -6,6 +6,7 @@ using SalesWebMVc.Responses.DepartmentResponses;
 using SalesWebMVc.Requests;
 using Swashbuckle.AspNetCore.Annotations; // Importar para usar os atributos do Swagger
 using SalesWebMVc.Services;
+using SalesWebMVc.Requests.DepartmentsRequests;
 
 namespace SalesWebMVc.Controllers
 {
@@ -23,7 +24,7 @@ namespace SalesWebMVc.Controllers
 
 		[HttpGet]
 		[SwaggerOperation(Summary = "Obter todos os departamentos")]
-		[SwaggerResponse(200, "Departamentos encontrados", typeof(DepartmentResponseJson))]
+		[SwaggerResponse(200, "Departamentos encontrados")]
 		[SwaggerResponse(404, "Nenhum departamento encontrado")]
 		public async Task<ActionResult<IEnumerable<DepartmentResponseJson>>> Index()
 		{
@@ -36,7 +37,7 @@ namespace SalesWebMVc.Controllers
 		[SwaggerOperation(Summary = "Obter detalhes de um departamento")]
 		[SwaggerResponse(200, "Departamento encontrado", typeof(DepartmentResponseJson))]
 		[SwaggerResponse(404, "Departamento não encontrado")]
-		public async Task<ActionResult<DepartmentResponseJson>> Details(int id)
+		public async Task<ActionResult<DepartmentResponseDetailJson>> Details(int id)
 		{
 			var response = await _departmentService.FindByIdAsync(id);
 
@@ -45,21 +46,26 @@ namespace SalesWebMVc.Controllers
 
 		[HttpPost]
 		[SwaggerOperation(Summary = "Criar um novo departamento")]
-		[SwaggerResponse(201, "Departamento criado", typeof(DepartmentResponseJson))]
-		public async Task<ActionResult<Department>> Create(DepartmentRequestJson departmentRequest)
+		[SwaggerResponse(201, "Departamento criado", typeof(DepartmentRequestCreateJson))]
+		[SwaggerResponse(400, "Dados do departamento errados")]
+
+		public async Task<ActionResult<Department>> Create(DepartmentRequestCreateJson departmentRequest)
 		{
-			var department = new Department(departmentRequest.Id, departmentRequest.Name);
+
+			var department = new Department(departmentRequest.Name);
 
 			await _departmentService.CreateAsync(department);
 
 			return CreatedAtAction("GetDepartment", new { id = department.Id }, department);
+
 		}
 
 		[HttpPut]
 		[SwaggerOperation(Summary = "Atualizar um departamento existente")]
 		[SwaggerResponse(204, "Departamento atualizado")]
-		[SwaggerResponse(400, "Id do departamento inválido")]
-		public async Task<IActionResult> Edit(DepartmentRequestJson departmentRequest)
+		[SwaggerResponse(400, "Bad request")]
+		[SwaggerResponse(404, "Departamento não encontrado")]
+		public async Task<IActionResult> Edit(DepartmentRequestUpdateJson departmentRequest)
 		{
 			var department = new Department(departmentRequest.Id, departmentRequest.Name);
 			await _departmentService.UpdateAsync(department);
@@ -69,6 +75,7 @@ namespace SalesWebMVc.Controllers
 		[HttpDelete("{id}")]
 		[SwaggerOperation(Summary = "Excluir um departamento")]
 		[SwaggerResponse(204, "Departamento excluído")]
+		[SwaggerResponse(404, "Departamento não encontrado")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			await _departmentService.RemoveAsync(id);

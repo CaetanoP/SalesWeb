@@ -4,20 +4,26 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SalesWebMVc.Responses.DepartmentResponses;
 using SalesWebMVc.Services.Exceptions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using SalesWebMVc.Models.Validator;
 
 namespace SalesWebMVc.Services
 {
 	public class DepartmentService
 	{
 		private readonly SalesWebMVcContext _context;
-		public DepartmentService(SalesWebMVcContext context)
+		private readonly DepartmentValidator _departmentValidator;
+		public DepartmentService(SalesWebMVcContext context, DepartmentValidator departmentValidator)
 		{
 			_context = context;
+			_departmentValidator = departmentValidator;
 		}
 		//Method to find all departments
 		public async Task<List<DepartmentResponseJson>> FindAllAsync()
 		{
 			var departments = await _context.Department.OrderBy(x => x.Name).ToListAsync();
+			if (departments.Count == 0)
+				throw new NotFoundException("No departments found");
 
 			return departments.Select(x => new DepartmentResponseJson
 			{
@@ -26,60 +32,117 @@ namespace SalesWebMVc.Services
 			}).ToList();
 		}
 		//Method to find a department by id
-		public async Task<DepartmentResponseJson> FindByIdAsync(int id)
+		public async Task<DepartmentResponseDetailJson> FindByIdAsync(int id)
 		{
+			//The default value of the department is null
 			var department = await _context.Department.FirstOrDefaultAsync(x => x.Id == id);
 
-			if(department == null)
-			{
-				return null;
-			}
-			return new DepartmentResponseJson
+			if (department is null)
+				throw new NotFoundException("Department not found");
+			//Verify if the department has any seller
+			if (department.Sellers.Count == 0)
+				department.Sellers = new List<Seller>();
+			else
+				//Find All the sellers that are in the department
+				department.Sellers = await _context.Seller.Where(x => x.DepartmentId == id).ToListAsync();
+
+
+			return new DepartmentResponseDetailJson
 			{
 				Id = department.Id,
-				Name = department.Name
+				Name = department.Name,
+				Sellers = department.Sellers
 			};
 		}
 		//Method to create a department
 		public async Task CreateAsync(Department department)
 		{
-			_context.Department.Add(department);
-			await _context.SaveChangesAsync();
+			// Using FluentValidation to validate the department sintaxe
+			var validationResult = await _departmentValidator.ValidateAsync(department);
+			//veriy if the department id already exists
+			bool hasAny = await _context.Department.AnyAsync(x => x.Name == department.Name);
+
+			if (hasAny)
+				throw new IntegrityException("There is already a department with this name");
+
+			if (!validationResult.IsValid)
+			{
+				//If the validation is not valid, the method will throw a BadRequestException with the error messages
+				var errors = validationResult.Errors.Select(e => e.ErrorMessage);
+				throw new BadRequestException(string.Join(".\n", errors));
+			}
+
+
+			try
+			{
+
+				_context.Department.Add(department);
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException)
+			{
+				throw new IntegrityException("Department Id conflict, try a different Id number");
+			}
+			catch (Exception)
+			{
+				throw new Exception("An error occurred while creating the department");
+			}
+
 		}
 		//Method to update a department
 		public async Task UpdateAsync(Department department)
 		{
+			//
 			bool hasAny = await _context.Department.AnyAsync(x => x.Id == department.Id);
-
-			if(!hasAny)
-			{
+			if (!hasAny)
 				throw new NotFoundException("Department not found");
-			}
+			bool sameName = await _context.Department.AnyAsync(x => x.Name == department.Name && x.Id != department.Id);
+			if (sameName)
+				throw new IntegrityException("There is already a department with this name");
+
 			try
 			{
 				_context.Update(department);
 				await _context.SaveChangesAsync();
 			}
-			catch(DbUpdateConcurrencyException e)
+			catch (DbUpdateConcurrencyException e)
 			{
-				//the DbUpdateConcurrencyException is a exception that is thrown when a concurrency error is encountered while saving to the database
-				//that means that another user has updated the data in the database since the data was loaded
 				throw new DbConcurrencyException(e.Message);
 			}
+			catch (Exception)
+			{
+				throw new Exception("An error occurred while updating the department");
+			}
+
 		}
 		//Method to delete a department
 		public async Task RemoveAsync(int id)
 		{
+
+			bool exists = await _context.Department.AnyAsync(d => d.Id == id);
+
+			if (!exists)
+			{
+				throw new NotFoundException("Department not found");
+			}
+
 			try
 			{
 				var department = await _context.Department.FindAsync(id);
 				_context.Department.Remove(department);
 				await _context.SaveChangesAsync();
 			}
-			catch(DbUpdateException e)
+			catch (DbUpdateConcurrencyException e)
 			{
-				//the DbUpdateException is a exception that is thrown when an error is encountered while saving to the database
-				throw new IntegrityException(e.Message);
+				throw new DbConcurrencyException(e.Message);
+			}
+			catch (DbUpdateException e)
+			{
+				throw new IntegrityException("Can't delete department because it has sellers");
+			}
+			catch (Exception)
+			{
+				throw new Exception("An error occurred while removing the department");
 			}
 		}
 	}
