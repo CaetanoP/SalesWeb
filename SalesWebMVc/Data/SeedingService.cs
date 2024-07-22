@@ -20,19 +20,19 @@ namespace SalesWebMVc.Data
             {
                 return; // DB has been seeded
             }
-
+            //Generate Departments
             Department d1 = new Department(1, "Computers");
             Department d2 = new Department(2, "Electronics");
             Department d3 = new Department(3, "Fashion");
             Department d4 = new Department(4, "Books");
-
+            //Generate Sellers
             Seller s1 = new Seller(1, "Bob Brown", "bob@gmail.com", new DateTime(1998, 4, 21), 1000.0, d1);
             Seller s2 = new Seller(2, "Maria Green", "maria@gmail.com", new DateTime(1979, 12, 31), 3500.0, d2);
             Seller s3 = new Seller(3, "Alex Grey", "alex@gmail.com", new DateTime(1988, 1, 15), 2200.0, d1);
             Seller s4 = new Seller(4, "Martha Red", "martha@gmail.com", new DateTime(1993, 11, 30), 3000.0, d4);
             Seller s5 = new Seller(5, "Donald Blue", "donald@gmail.com", new DateTime(2000, 1, 9), 4000.0, d3);
             Seller s6 = new Seller(6, "Alex Pink", "bob@gmail.com", new DateTime(1997, 3, 4), 3000.0, d2);
-
+            //Generate SalesRecords
             SalesRecord r1 = new SalesRecord(1, new DateTime(2018, 09, 25), 11000.0, SaleStatus.Billed, s1);
             SalesRecord r2 = new SalesRecord(2, new DateTime(2018, 09, 4), 7000.0, SaleStatus.Billed, s5);
             SalesRecord r3 = new SalesRecord(3, new DateTime(2018, 09, 13), 4000.0, SaleStatus.Canceled, s4);
@@ -63,6 +63,21 @@ namespace SalesWebMVc.Data
             SalesRecord r28 = new SalesRecord(28, new DateTime(2018, 10, 7), 4000.0, SaleStatus.Billed, s3);
             SalesRecord r29 = new SalesRecord(29, new DateTime(2018, 10, 23), 12000.0, SaleStatus.Billed, s5);
             SalesRecord r30 = new SalesRecord(30, new DateTime(2018, 10, 12), 5000.0, SaleStatus.Billed, s2);
+            //Define a seller to each department
+            d1.AddSeller(s1);
+            d2.AddSeller(s2);
+            d3.AddSeller(s3);
+            d4.AddSeller(s4);
+            d1.AddSeller(s5);
+            d2.AddSeller(s6);
+            //Define Each seller a DepartmentId
+            s1.DepartmentId= 1;
+            s2.DepartmentId= 2;
+            s3.DepartmentId= 3;
+            s4.DepartmentId= 4;
+            s5.DepartmentId= 1;
+            s6.DepartmentId= 2;
+
 
             //Adding the objects to the database
             _context.Department.AddRange(d1, d2, d3, d4);

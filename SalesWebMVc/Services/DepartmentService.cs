@@ -35,23 +35,16 @@ namespace SalesWebMVc.Services
 		public async Task<DepartmentResponseDetailJson> FindByIdAsync(int id)
 		{
 			//The default value of the department is null
-			var department = await _context.Department.FirstOrDefaultAsync(x => x.Id == id);
+			var department = await _context.Department.Include(d => d.Sellers).FirstOrDefaultAsync(x => x.Id == id);
 
 			if (department is null)
 				throw new NotFoundException("Department not found");
-			//Verify if the department has any seller
-			if (department.Sellers.Count == 0)
-				department.Sellers = new List<Seller>();
-			else
-				//Find All the sellers that are in the department
-				department.Sellers = await _context.Seller.Where(x => x.DepartmentId == id).ToListAsync();
-
 
 			return new DepartmentResponseDetailJson
 			{
 				Id = department.Id,
 				Name = department.Name,
-				Sellers = department.Sellers
+				Sellers = new List<Seller>(),
 			};
 		}
 		//Method to create a department
