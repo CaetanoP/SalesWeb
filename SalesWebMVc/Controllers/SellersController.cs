@@ -29,11 +29,22 @@ namespace SalesWebMVc.Controllers
 		[HttpGet] // Lista todos os vendedores
 		[SwaggerOperation(Summary = "Obter todos os vendedores")]
 		[SwaggerResponse(200, "Vendedores encontrados", typeof(IEnumerable<Seller>))]
-		public async Task<ActionResult<IEnumerable<Seller>>> GetAll()
+		public async Task<ActionResult<IEnumerable<Seller>>> GetAll([FromQuery] bool includeSales = false)
 		{
-			var list = await _sellerService.FindAllAsync();
-			return Ok(list);
+			if (includeSales)
+			{
+				var list = await _sellerService.FindAllAsyncWithDetails();
+				return Ok(list);
+
+			}
+			else
+			{
+				var list = await _sellerService.FindAllAsyncWithoutDetails();
+				return Ok(list);
+			}
 		}
+
+
 
 		[HttpGet("{id}")] // Detalhes de um vendedor por ID
 		[SwaggerOperation(Summary = "Obter detalhes de um vendedor")]
@@ -46,31 +57,41 @@ namespace SalesWebMVc.Controllers
 			return Ok(response);
 		}
 
+
+
 		[HttpPost] // Criar um novo vendedor
 		[SwaggerOperation(Summary = "Criar um novo vendedor")]
 		[SwaggerResponse(201, "Vendedor criado", typeof(SellerResponseCreateJson))]
+		[SwaggerResponse(400, "Dados do vendedor errados")]
 		public async Task<ActionResult<Seller>> Create(SellerRequestCreateJson sellerRequest)
 		{
-			Seller newSeller = new Seller( sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
+			Seller newSeller = new Seller(sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
 
 			await _sellerService.InsertAsync(newSeller);
 			SellerResponseCreateJson responseCreateJson = new SellerResponseCreateJson(newSeller.Id, newSeller.Name, newSeller.Email, newSeller.BaseSalary, newSeller.BirthDate, newSeller.DepartmentId);
 			return CreatedAtAction(nameof(Details), new { id = responseCreateJson.Id }, responseCreateJson);
 		}
 
+
+
 		[HttpPut("{id}")] // Editar um vendedor existente
 		[SwaggerOperation(Summary = "Atualizar um vendedor existente")]
 		[SwaggerResponse(204, "Vendedor atualizado")]
+		[SwaggerResponse(404, "Vendedor não encontrado")]
 		public async Task<IActionResult> UpdateAsync(int id, SellerRequestUpdateJson sellerRequest)
 		{
 			//Modificar depois para instanciar com o contrutor
-			Seller newSeller = new Seller(sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
+			Seller newSeller = new Seller(id, sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
 			await _sellerService.UpdateAsync(newSeller);
 			return NoContent(); // 204 no Content
 
 		}
+
+
 		[HttpDelete("{id}")] // Excluir um vendedor
 		[SwaggerOperation(Summary = "Excluir um vendedor")]
+		[SwaggerResponse(204, "Vendedor excluído")]
+		[SwaggerResponse(404, "Vendedor não encontrado")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			await _sellerService.RemoveAsync(id);

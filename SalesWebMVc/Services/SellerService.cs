@@ -23,13 +23,25 @@ namespace SalesWebMVc.Services
 			_sellerValidator = sellerValidator;
 		}
 
-		public async Task<List<Seller>> FindAllAsync()
+		public async Task<List<Seller>> FindAllAsyncWithDetails()
 		{
-
+			var sellers = await _context.Seller.Include(x=> x.Sales).ToListAsync();
+			if(sellers.IsNullOrEmpty())
+			{
+				throw new NotFoundException("No sellers found");
+			}
+			return sellers;
+		
+		}
+		public async Task<List<Seller>> FindAllAsyncWithoutDetails()
+		{
 			var sellers = await _context.Seller.ToListAsync();
 			if (sellers.IsNullOrEmpty())
+			{
 				throw new NotFoundException("No sellers found");
+			}
 			return sellers;
+
 		}
 
 		public async Task InsertAsync(Seller seller)
@@ -69,9 +81,10 @@ namespace SalesWebMVc.Services
 		}
 		public async Task RemoveAsync(int id)
 		{
-			var seller = await FindByIdAsync(id);
+			
 			try
 			{
+				var seller = await FindByIdAsync(id);
 				_context.Seller.Remove(seller);
 				await _context.SaveChangesAsync();
 			}
@@ -82,6 +95,10 @@ namespace SalesWebMVc.Services
 			catch (DbUpdateException e)
 			{
 				throw new IntegrityException(e.Message);
+			}
+			catch(NotFoundException)
+			{
+				throw new NotFoundException("Seller not found");
 			}
 			catch (Exception)
 			{
