@@ -32,27 +32,29 @@ namespace SalesWebMVc.Models
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
         public DateTime BirthDate { get; set; }
-
-        
-        public Department? Department { get; set; }
         public int DepartmentId { get; set; }
         public ICollection<SalesRecord> Sales { get; set; } = new List<SalesRecord>();
 
 
-        public Seller()
-        {
-
-        }
-
-        public Seller(int id, string name, string email, DateTime birthDate, double baseSalary, Department department)
-        {
+		public Seller(int id,string name, string email, DateTime birthDate, double baseSalary, int departmentId)
+		{
             Id = id;
+			Name = name;
+			Email = email;
+			BaseSalary = baseSalary;
+			BirthDate = birthDate;
+			DepartmentId = departmentId;
+
+		}
+		public Seller( string name, string email, DateTime birthDate, double baseSalary,int departmentId)
+        {
             Name = name;
             Email = email;
             BaseSalary = baseSalary;
             BirthDate = birthDate;
-            Department = department;
-        }
+            DepartmentId = departmentId;
+
+		}
 
         public void AddSales(SalesRecord sr)
         {

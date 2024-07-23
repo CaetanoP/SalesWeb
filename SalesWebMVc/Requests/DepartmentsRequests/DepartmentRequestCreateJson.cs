@@ -2,6 +2,6 @@
 {
     public class DepartmentRequestCreateJson
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

@@ -26,7 +26,7 @@ namespace SalesWebMVc.Controllers
 		[SwaggerOperation(Summary = "Obter todos os departamentos")]
 		[SwaggerResponse(200, "Departamentos encontrados")]
 		[SwaggerResponse(404, "Nenhum departamento encontrado")]
-		public async Task<ActionResult<IEnumerable<DepartmentResponseJson>>> Index()
+		public async Task<ActionResult<IEnumerable<DepartmentResponseJson>>> GetAll()
 		{
 			var response =await _departmentService.FindAllAsync();
 
@@ -65,7 +65,7 @@ namespace SalesWebMVc.Controllers
 		[SwaggerResponse(204, "Departamento atualizado")]
 		[SwaggerResponse(400, "Bad request")]
 		[SwaggerResponse(404, "Departamento não encontrado")]
-		public async Task<IActionResult> Edit(DepartmentRequestUpdateJson departmentRequest)
+		public async Task<IActionResult> Update(DepartmentRequestUpdateJson departmentRequest)
 		{
 			var department = new Department(departmentRequest.Id, departmentRequest.Name);
 			await _departmentService.UpdateAsync(department);

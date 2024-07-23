@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.OpenApi.Models;
 using SalesWebMVc.Filter;
 using SalesWebMVc.Models.Validator;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SalesWebMVcContext>(options =>
@@ -30,11 +31,6 @@ builder.Services.AddCors(options =>
 			   .AllowAnyMethod();
 	});
 });
-//Filter configuration
-builder.Services.AddControllers(options =>
-{
-	options.Filters.Add<CustomExceptionFilter>();
-});
 
 // Configuração do Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -43,14 +39,20 @@ builder.Services.AddSwaggerGen(c =>
 	c.SwaggerDoc("v1", new OpenApiInfo { Title = "SalesWebMVc API", Version = "v1" });
 	c.EnableAnnotations();
 });
+//Filter configuration
+builder.Services.AddControllers(options =>
+{
+	options.Filters.Add<CustomExceptionFilter>();
+});
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllers();
 builder.Services.AddScoped<SeedingService>();
 builder.Services.AddScoped<SellerService>();
 builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<SalesRecordService>();
 builder.Services.AddScoped<DepartmentValidator>();
+builder.Services.AddScoped<SellerValidator>();
 
 var app = builder.Build();
 

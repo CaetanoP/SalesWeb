@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using NuGet.Protocol.Plugins;
+using SalesWebMVc.Filter;
 using SalesWebMVc.Models;
+using SalesWebMVc.Requests.SellerRequests;
+using SalesWebMVc.Responses.SellerResponses;
 using SalesWebMVc.Services;
-using SalesWebMVc.Models.ViewModels;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using SalesWebMVc.Services.Exceptions;
-using System.Diagnostics;
 using Swashbuckle.AspNetCore.Annotations;
+
 
 namespace SalesWebMVc.Controllers
 {
@@ -23,9 +25,11 @@ namespace SalesWebMVc.Controllers
 			_departmentService = departmentService;
 		}
 
+
 		[HttpGet] // Lista todos os vendedores
 		[SwaggerOperation(Summary = "Obter todos os vendedores")]
-		public async Task<ActionResult<IEnumerable<Seller>>> Index()
+		[SwaggerResponse(200, "Vendedores encontrados", typeof(IEnumerable<Seller>))]
+		public async Task<ActionResult<IEnumerable<Seller>>> GetAll()
 		{
 			var list = await _sellerService.FindAllAsync();
 			return Ok(list);
@@ -33,69 +37,44 @@ namespace SalesWebMVc.Controllers
 
 		[HttpGet("{id}")] // Detalhes de um vendedor por ID
 		[SwaggerOperation(Summary = "Obter detalhes de um vendedor")]
-		public async Task<ActionResult<Seller>> Details(int id)
+		[SwaggerResponse(200, "Vendedor encontrado", typeof(SellerResponseDetailJson))]
+		[SwaggerResponse(404, "Vendedor não encontrado")]
+		public async Task<ActionResult<SellerResponseDetailJson>> Details(int id)
 		{
 			var obj = await _sellerService.FindByIdAsync(id);
-			if (obj == null)
-			{
-				return NotFound(); // Retorna 404 Not Found
-			}
-			return Ok(obj);
+			var response = new SellerResponseDetailJson(obj);
+			return Ok(response);
 		}
 
 		[HttpPost] // Criar um novo vendedor
 		[SwaggerOperation(Summary = "Criar um novo vendedor")]
-		public async Task<ActionResult<Seller>> Create(Seller seller)
+		[SwaggerResponse(201, "Vendedor criado", typeof(SellerResponseCreateJson))]
+		public async Task<ActionResult<Seller>> Create(SellerRequestCreateJson sellerRequest)
 		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState); // Retorna 400 Bad Request
-			}
-			await _sellerService.InsertAsync(seller);
-			return CreatedAtAction(nameof(Details), new { id = seller.Id }, seller);
+			Seller newSeller = new Seller( sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
+
+			await _sellerService.InsertAsync(newSeller);
+			SellerResponseCreateJson responseCreateJson = new SellerResponseCreateJson(newSeller.Id, newSeller.Name, newSeller.Email, newSeller.BaseSalary, newSeller.BirthDate, newSeller.DepartmentId);
+			return CreatedAtAction(nameof(Details), new { id = responseCreateJson.Id }, responseCreateJson);
 		}
 
 		[HttpPut("{id}")] // Editar um vendedor existente
 		[SwaggerOperation(Summary = "Atualizar um vendedor existente")]
-		public async Task<IActionResult> Edit(int id, Seller seller)
+		[SwaggerResponse(204, "Vendedor atualizado")]
+		public async Task<IActionResult> UpdateAsync(int id, SellerRequestUpdateJson sellerRequest)
 		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest(ModelState); // Retorna 400 Bad Request
-			}
-			if (id != seller.Id)
-			{
-				return BadRequest(); // Retorna 400 Bad Request
-			}
-			try
-			{
-				var existingSeller = await _sellerService.FindByIdAsync(id);
-				if (existingSeller == null)
-				{
-					return NotFound(); // Retorna 404 Not Found
-				}
-				await _sellerService.UpdateAsync(existingSeller); // Passar o vendedor existente atualizado
-				return NoContent(); // Retorna 204 No Content
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				throw; // Deixe o Entity Framework lidar com a exceção de concorrência
-			}
-		}
+			//Modificar depois para instanciar com o contrutor
+			Seller newSeller = new Seller(sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
+			await _sellerService.UpdateAsync(newSeller);
+			return NoContent(); // 204 no Content
 
+		}
 		[HttpDelete("{id}")] // Excluir um vendedor
 		[SwaggerOperation(Summary = "Excluir um vendedor")]
 		public async Task<IActionResult> Delete(int id)
 		{
-			try
-			{
-				await _sellerService.RemoveAsync(id);
-				return NoContent(); // Retorna 204 No Content
-			}
-			catch (IntegrityException e)
-			{
-				return StatusCode(500, e.Message); // Retorna 500 Internal Server Error
-			}
+			await _sellerService.RemoveAsync(id);
+			return NoContent(); // Retorna 204 No Content
 		}
 	}
 }
