@@ -15,26 +15,19 @@ namespace SalesWebMVc.Controllers
 			_salesRecordService = salesRecordService;
 		}
 
-		[HttpGet("simpleSearch")]
-		[SwaggerOperation(Summary = "Realiza uma busca simples por registros de venda")]
+		[HttpGet]
+		[SwaggerOperation(Summary = "Retornar todas as vendas")]
+		[SwaggerResponse(200, "Vendas retornadas com sucesso")]
+		[SwaggerResponse(500, "Erro interno do servidor")]
+		[SwaggerResponse(404, "Nenhuma venda encontrada")]
+		
 		public async Task<IActionResult> SimpleSearch(DateTime? minDate, DateTime? maxDate)
 		{
-			minDate = minDate ?? new DateTime(DateTime.Now.Year, 1, 1);
+			minDate = minDate ?? new DateTime(2000, 1, 1);
 			maxDate = maxDate ?? DateTime.Now;
-
-			var result = await _salesRecordService.FindByDateAsync(minDate, maxDate);
+			var result = await _salesRecordService.GetAllAsync(minDate, maxDate);
 			return Ok(result); // Retorna os resultados da busca em formato JSON
 		}
 
-		[HttpGet("groupingSearch")]
-		[SwaggerOperation(Summary = "Realiza uma busca agrupada por registros de venda")]
-		public async Task<IActionResult> GroupingSearch(DateTime? minDate, DateTime? maxDate)
-		{
-			minDate = minDate ?? new DateTime(DateTime.Now.Year, 1, 1);
-			maxDate = maxDate ?? DateTime.Now;
-
-			var result = await _salesRecordService.FindByDateGroupingAsync(minDate, maxDate);
-			return Ok(result); // Retorna os resultados da busca em formato JSON
-		}
 	}
 }

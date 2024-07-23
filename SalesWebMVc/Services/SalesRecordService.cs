@@ -1,61 +1,52 @@
 ﻿using SalesWebMVc.Data;
 using SalesWebMVc.Models;
 using Microsoft.EntityFrameworkCore;
+using SalesWebMVc.Responses;
+using SalesWebMVc.Services;
+using SalesWebMVc.Services.Exceptions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace SalesWebMVc.Services
 {
-    public class SalesRecordService
-    {
-        private readonly SalesWebMVcContext _context;
+	public class SalesRecordService
+	{
+		private readonly SalesWebMVcContext _context;
+		private readonly SellerService _sellerService;
 
-        public SalesRecordService(SalesWebMVcContext context)
-        {
-            _context = context;
-        }
+		public SalesRecordService(SalesWebMVcContext context, SellerService sellerService)
+		{
+			_context = context;
+			_sellerService = sellerService;
+		}
 
-        public async Task<List<SalesRecord>> FindByDateAsync(DateTime? minDate, DateTime? maxDate)
-        {
-            /*
-            var result = from obj in _context.SalesRecord select obj;
-            if (minDate.HasValue)
-            {
-                result = result.Where(x => x.Date >= minDate.Value);
-            }
-            if (maxDate.HasValue)
-            {
-                result = result.Where(x => x.Date <= maxDate.Value);
-            }
-            return await result
-                .Include(x => x.Seller)
-                .Include(x => x.Seller.Department)
-                .OrderByDescending(x => x.Date)
-                .ToListAsync();
-            */
-            return null;
-        }
+		public async Task<List<SalesRecord>> GetAllAsync(DateTime? minDate, DateTime? maxDate)
+		{
+			try
+			{
 
-        public async Task<List<IGrouping<Department,SalesRecord>>> FindByDateGroupingAsync(DateTime? minDate, DateTime? maxDate)
-        {
-            /*
-            var result = from obj in _context.SalesRecord select obj;
-            if (minDate.HasValue)
-            {
-                result = result.Where(x => x.Date >= minDate.Value);
-            }
-            if (maxDate.HasValue)
-            {
-                result = result.Where(x => x.Date <= maxDate.Value);
-            }
-            return await result
-                .Include(x => x.Seller)
-                .Include(x => x.Seller.Department)
-                .OrderByDescending(x => x.Date)
-                .GroupBy(x => x.Seller.Department)
-                .ToListAsync();
-            */
-            return null;
-        }
+				var result = await _context.SalesRecord
+					.Where(x => x.Date >= minDate.Value && x.Date <= maxDate.Value)
+					.OrderByDescending(x => x.Date)
+					.ToListAsync();
+				if(result.IsNullOrEmpty())
+					throw new Exception("No Sales Records Found");
+
+				return result;
+			}
+			catch (DbConcurrencyException)
+			{
+				throw new Exception("Error: Database Concurrency Exception");
+			}
+			catch (Exception e)
+			{
+				throw new Exception(e.Message);
+			}
+			
+
+			
+		}
 
 
-    }
+
+	}
 }

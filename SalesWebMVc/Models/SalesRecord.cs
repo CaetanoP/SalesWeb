@@ -1,4 +1,6 @@
-﻿using SalesWebMVc.Models.Enums;
+﻿using Microsoft.AspNetCore.Mvc;
+using SalesWebMVc.Models.Enums;
+using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
 namespace SalesWebMVc.Models
@@ -8,8 +10,8 @@ namespace SalesWebMVc.Models
         public int Id { get; set; }
 
 
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
-        public DateTime Date { get; set; }
+		[SwaggerSchema(Format = "date")]
+		public DateTime Date { get; set; }
 
 
         [DisplayFormat(DataFormatString = "{0:F2}")]
