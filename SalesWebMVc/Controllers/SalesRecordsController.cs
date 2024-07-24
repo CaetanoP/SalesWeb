@@ -17,13 +17,18 @@ namespace SalesWebMVc.Controllers
 			_salesRecordService = salesRecordService;
 		}
 
-		[HttpGet]
-		[SwaggerOperation(Summary = "Retornar todas as vendas")]
-		[SwaggerResponse(200, "Vendas retornadas com sucesso")]
-		[SwaggerResponse(500, "Erro interno do servidor")]
-		[SwaggerResponse(404, "Nenhuma venda encontrada")]
 
-		public async Task<IActionResult> GetAll(DateTime? minDate, DateTime? maxDate)
+
+
+		[HttpGet]
+		[SwaggerOperation(
+		   Summary = "Obter todas as vendas",
+		   Description = "Retorna uma lista de todas as vendas em um determinado período. Utilize os parâmetros opcionais 'minDate' e 'maxDate' para filtrar por período. Deixe em branco para retornar todas as vendas"
+	   )]
+		[SwaggerResponse(200, "Vendas encontradas", typeof(IEnumerable<SalesRecord>))]
+		[SwaggerResponse(404, "Nenhuma venda encontrada")]
+		public async Task<ActionResult<IEnumerable<SalesRecord>>> GetAll([FromQuery] DateTime? minDate,
+			[FromQuery] DateTime? maxDate)
 		{
 			minDate = minDate ?? new DateTime(2000, 1, 1);
 			maxDate = maxDate ?? DateTime.Now;
@@ -31,34 +36,49 @@ namespace SalesWebMVc.Controllers
 			return Ok(result); // Retorna os resultados da busca em formato JSON
 		}
 
+
+
+
 		[HttpPost]
-		[SwaggerOperation(Summary = "Inserir uma nova venda")]
-		[SwaggerResponse(200, "Venda inserida com sucesso")]
-		[SwaggerResponse(400, "Erro de validação")]
-		[SwaggerResponse(500, "Erro interno do servidor")]
-		public async Task<IActionResult> Insert(SaleInsertRequestJson salesRequest)
+		[SwaggerOperation(
+			Summary = "Criar um novo registro de venda",
+			Description = "Cria um novo registro de venda com os dados fornecidos no corpo da requisição."
+		)]
+		[SwaggerResponse(201, "Venda criada com sucesso", typeof(SalesRecord))]
+		[SwaggerResponse(400, "Dados da venda inválidos")]
+		public async Task<ActionResult<SalesRecord>> Create(SaleInsertRequestJson salesRequest)
 		{
 			SalesRecord newSale = new SalesRecord(DateTime.UtcNow, salesRequest.Amount, salesRequest.Status, salesRequest.SellerId);
 
-			await _salesRecordService.InsertAsync(newSale);
-			return Ok();
+			await _salesRecordService.CreateAsync(newSale);
+			return CreatedAtAction(nameof(GetById), new { id = newSale.Id }, newSale);
 		}
+
+
+
 		[HttpDelete("{id}")]
-		[SwaggerOperation(Summary = "Deletar uma venda por Id")]
-		[SwaggerResponse(200, "Venda deletada com sucesso")]
-		[SwaggerResponse(500, "Erro interno do servidor")]
+		[SwaggerOperation(
+		   Summary = "Excluir uma venda por ID",
+		   Description = "Exclui o registro de venda com o ID especificado."
+	   )]
+		[SwaggerResponse(204, "Venda excluída com sucesso")]
 		[SwaggerResponse(404, "Venda não encontrada")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			await _salesRecordService.RemoveByIdAsnc(id);
 			return Ok();
 		}
+
+
+
 		[HttpGet("{id}")]
-		[SwaggerOperation(Summary = "Retornar uma venda por Id")]
-		[SwaggerResponse(200, "Venda retornada com sucesso")]
-		[SwaggerResponse(500, "Erro interno do servidor")]
+		[SwaggerOperation(
+			Summary = "Obter detalhes de uma venda por ID",
+			Description = "Retorna os detalhes da venda com o ID especificado."
+		)]
+		[SwaggerResponse(200, "Venda encontrada", typeof(SalesRecord))]
 		[SwaggerResponse(404, "Venda não encontrada")]
-		public async Task<IActionResult> GetById(int id)
+		public async Task<ActionResult<SalesRecord>> GetById(int id)
 		{
 			var result = await _salesRecordService.GetByIdAsync(id);
 			return Ok(result);

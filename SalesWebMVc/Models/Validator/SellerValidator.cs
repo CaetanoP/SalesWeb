@@ -35,7 +35,12 @@ namespace SalesWebMVc.Models.Validator
 				.WithMessage("The department id must be greater than or equal to 1")
 				.NotNull()
 				.WithMessage("The department id is mandatory");
-
+			//Validate if the BirthDate is a valid date +18 years
+			RuleFor(x => x.BirthDate)
+				.NotEmpty()
+				.WithMessage("The birth date is mandatory")
+				.LessThan(DateTime.Now.AddYears(-18))
+				.WithMessage("The seller must be at least 18 years old");
 			
 		}
 	}

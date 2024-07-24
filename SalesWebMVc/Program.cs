@@ -86,7 +86,6 @@ else
 	app.UseExceptionHandler("/Home/Error"); // Configuração de erro para produção
 	app.UseHsts(); // Configuração de HSTS para produção
 }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

@@ -92,6 +92,11 @@ namespace SalesWebMVc.Services
 			{
 				throw new DbConcurrencyException(e.Message);
 			}
+			catch(IntegrityException e)
+			{
+				throw new IntegrityException(e.Message);
+			}
+			
 			catch (DbUpdateException e)
 			{
 				throw new IntegrityException(e.Message);

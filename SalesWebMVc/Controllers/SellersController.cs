@@ -27,7 +27,10 @@ namespace SalesWebMVc.Controllers
 
 
 		[HttpGet] // Lista todos os vendedores
-		[SwaggerOperation(Summary = "Obter todos os vendedores")]
+		[SwaggerOperation(
+			Summary = "Obter todos os vendedores",
+			Description = "Retorna uma lista de todos os vendedores cadastrados. Use o parâmetro 'includeSales' para incluir ou não os detalhes das vendas de cada vendedor."
+		)]
 		[SwaggerResponse(200, "Vendedores encontrados", typeof(IEnumerable<Seller>))]
 		public async Task<ActionResult<IEnumerable<Seller>>> GetAll([FromQuery] bool includeSales = false)
 		{
@@ -46,8 +49,11 @@ namespace SalesWebMVc.Controllers
 
 
 
-		[HttpGet("{id}")] // Detalhes de um vendedor por ID
-		[SwaggerOperation(Summary = "Obter detalhes de um vendedor")]
+		[HttpGet("{id}")]
+		[SwaggerOperation(
+			Summary = "Obter detalhes de um vendedor",
+			Description = "Retorna os detalhes do vendedor com o ID especificado."
+		)]
 		[SwaggerResponse(200, "Vendedor encontrado", typeof(SellerResponseDetailJson))]
 		[SwaggerResponse(404, "Vendedor não encontrado")]
 		public async Task<ActionResult<SellerResponseDetailJson>> Details(int id)
@@ -59,10 +65,13 @@ namespace SalesWebMVc.Controllers
 
 
 
-		[HttpPost] // Criar um novo vendedor
-		[SwaggerOperation(Summary = "Criar um novo vendedor")]
+		[HttpPost]
+		[SwaggerOperation(
+			Summary = "Criar um novo vendedor",
+			Description = "Cria um novo vendedor com os dados fornecidos no corpo da requisição."
+		)]
 		[SwaggerResponse(201, "Vendedor criado", typeof(SellerResponseCreateJson))]
-		[SwaggerResponse(400, "Dados do vendedor errados")]
+		[SwaggerResponse(400, "Dados do vendedor inválidos")]
 		public async Task<ActionResult<Seller>> Create(SellerRequestCreateJson sellerRequest)
 		{
 			Seller newSeller = new Seller(sellerRequest.Name, sellerRequest.Email, sellerRequest.BirthDate, sellerRequest.BaseSalary, sellerRequest.DepartmentId);
@@ -74,9 +83,13 @@ namespace SalesWebMVc.Controllers
 
 
 
-		[HttpPut("{id}")] // Editar um vendedor existente
-		[SwaggerOperation(Summary = "Atualizar um vendedor existente")]
+		[HttpPut("{id}")]
+		[SwaggerOperation(
+		   Summary = "Atualizar um vendedor existente",
+		   Description = "Atualiza os dados do vendedor com o ID especificado. Os dados atualizados devem ser fornecidos no corpo da requisição."
+	   )]
 		[SwaggerResponse(204, "Vendedor atualizado")]
+		[SwaggerResponse(400, "Dados do vendedor inválidos")]
 		[SwaggerResponse(404, "Vendedor não encontrado")]
 		public async Task<IActionResult> UpdateAsync(int id, SellerRequestUpdateJson sellerRequest)
 		{
@@ -88,8 +101,11 @@ namespace SalesWebMVc.Controllers
 		}
 
 
-		[HttpDelete("{id}")] // Excluir um vendedor
-		[SwaggerOperation(Summary = "Excluir um vendedor")]
+		[HttpDelete("{id}")]
+		[SwaggerOperation(
+		   Summary = "Excluir um vendedor",
+		   Description = "Exclui o vendedor com o ID especificado."
+	   )]
 		[SwaggerResponse(204, "Vendedor excluído")]
 		[SwaggerResponse(404, "Vendedor não encontrado")]
 		public async Task<IActionResult> Delete(int id)

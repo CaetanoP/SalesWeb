@@ -7,6 +7,7 @@ using SalesWebMVc.Services.Exceptions;
 using Microsoft.IdentityModel.Tokens;
 using SalesWebMVc.Requests.SalesRequests;
 using SalesWebMVc.Models.Validator;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace SalesWebMVc.Services
 {
@@ -50,7 +51,7 @@ namespace SalesWebMVc.Services
 
 		}
 
-		public async Task InsertAsync(SalesRecord sale)
+		public async Task CreateAsync(SalesRecord sale)
 		{
 			Seller seler = await _sellerService.FindByIdAsync(sale.SellerId);
 			if (seler == null)
@@ -82,7 +83,7 @@ namespace SalesWebMVc.Services
 				var sale = await _context.SalesRecord.FindAsync(id);
 				if (sale is null)
 					throw new NotFoundException("Sale not found");
-
+				
 			try
 			{
 				_context.SalesRecord.Remove(sale);

@@ -23,18 +23,24 @@ namespace SalesWebMVc.Controllers
 		}
 
 		[HttpGet]
-		[SwaggerOperation(Summary = "Obter todos os departamentos")]
+		[SwaggerOperation(
+			Summary = "Obter todos os departamentos",
+			Description = "Retorna uma lista de todos os departamentos cadastrados. Se não houver departamentos, retorna uma lista vazia."
+		)]
 		[SwaggerResponse(200, "Departamentos encontrados")]
 		[SwaggerResponse(404, "Nenhum departamento encontrado")]
 		public async Task<ActionResult<IEnumerable<DepartmentResponseJson>>> GetAll()
 		{
-			var response =await _departmentService.FindAllAsync();
+			var response = await _departmentService.FindAllAsync();
 
 			return response;
 		}
 
 		[HttpGet("{id}")]
-		[SwaggerOperation(Summary = "Obter detalhes de um departamento")]
+		[SwaggerOperation(
+			Summary = "Obter detalhes de um departamento",
+			Description = "Retorna os detalhes do departamento com o ID especificado."
+		)]
 		[SwaggerResponse(200, "Departamento encontrado", typeof(DepartmentResponseJson))]
 		[SwaggerResponse(404, "Departamento não encontrado")]
 		public async Task<ActionResult<DepartmentResponseDetailJson>> Details(int id)
@@ -45,7 +51,10 @@ namespace SalesWebMVc.Controllers
 		}
 
 		[HttpPost]
-		[SwaggerOperation(Summary = "Criar um novo departamento")]
+		[SwaggerOperation(
+			Summary = "Criar um novo departamento",
+			Description = "Cria um novo departamento com os dados fornecidos no corpo da requisição. Retorna o departamento criado, incluindo o ID gerado automaticamente."
+		)]
 		[SwaggerResponse(201, "Departamento criado", typeof(DepartmentRequestCreateJson))]
 		[SwaggerResponse(400, "Dados do departamento errados")]
 
@@ -61,7 +70,10 @@ namespace SalesWebMVc.Controllers
 		}
 
 		[HttpPut]
-		[SwaggerOperation(Summary = "Atualizar um departamento existente")]
+		[SwaggerOperation(
+			Summary = "Atualizar um departamento existente",
+			Description = "Atualiza os dados do departamento com o ID especificado no corpo da requisição. Retorna 204 No Content se a atualização for bem-sucedida."
+		)]
 		[SwaggerResponse(204, "Departamento atualizado")]
 		[SwaggerResponse(400, "Bad request")]
 		[SwaggerResponse(404, "Departamento não encontrado")]
@@ -73,7 +85,10 @@ namespace SalesWebMVc.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[SwaggerOperation(Summary = "Excluir um departamento")]
+		[SwaggerOperation(
+			Summary = "Excluir um departamento",
+			Description = "Exclui o departamento com o ID especificado. Retorna 204 No Content se a exclusão for bem-sucedida."
+		)]
 		[SwaggerResponse(204, "Departamento excluído")]
 		[SwaggerResponse(404, "Departamento não encontrado")]
 		public async Task<IActionResult> Delete(int id)
