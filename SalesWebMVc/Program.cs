@@ -53,6 +53,7 @@ builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<SalesRecordService>();
 builder.Services.AddScoped<DepartmentValidator>();
 builder.Services.AddScoped<SellerValidator>();
+builder.Services.AddScoped<SalesRecordValidator>();
 
 var app = builder.Build();
 
