@@ -16,10 +16,12 @@ builder.Services.AddDbContext<SalesWebMVcContext>(options =>
 
 	var serverVersion = new MySqlServerVersion(new Version(8, 0, 2));
 
-	options.UseMySql(connectionString, serverVersion, mySqlOptions =>
-		mySqlOptions.MigrationsAssembly("SalesWebMVc")
-	);
+	options.UseMySql(connectionString, serverVersion, mySqlOptions =>mySqlOptions.MigrationsAssembly("SalesWebMVc"));
+	//Use EnableRetryOnFailure to enable automatic retry on failure
+	
+
 });
+
 
 // Configuração do CORS
 builder.Services.AddCors(options =>

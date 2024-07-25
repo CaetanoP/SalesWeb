@@ -13,6 +13,9 @@ namespace SalesWebMVc.Data
 
         public void Seed()
         {
+            //Create the Table departments Seller and SalesRecord
+            _context.Database.EnsureCreated();
+
             //use linq to verify if there is any data in the database
             if (_context.Department.Any() ||
                                _context.Seller.Any() ||
