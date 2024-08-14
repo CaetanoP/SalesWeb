@@ -7,9 +7,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
     "@neondatabase/serverless": "^0.9.4",
+    "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
+    "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
@@ -31,11 +34,12 @@
     "prop-types": "^15.8.1",
     "react": "19.0.0-rc.0",
     "react-dom": "19.0.0-rc.0",
+    "react-hook-form": "^7.52.2",
     "server-only": "^0.0.1",
+    "sonner": "^1.5.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss": "^3.4.4",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.5.3",
     "zod": "^3.23.8"
   },
   "prettier": {
@@ -43,5 +47,12 @@
     "singleQuote": true,
     "tabWidth": 2,
     "trailingComma": "none"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/eslint__js": "^8.42.3",
+    "eslint": "^9.9.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
   }
 }

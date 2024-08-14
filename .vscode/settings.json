@@ -1,0 +1,11 @@
+{
+    "eslint.codeActionsOnSave.mode": "all",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "always",
+        "source.organizeImports": "always",
+        "source.removeUnusedImports": "explicit"
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.tabWidth": 4
+}
