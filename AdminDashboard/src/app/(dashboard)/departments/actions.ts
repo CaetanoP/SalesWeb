@@ -8,9 +8,8 @@ export interface DepartmentEnitity {
   name: string;
 }
 
-export async function deleteDepartment(data: FormData) {
-  console.log(data);
-  const response = await fetch(`${config.api_url}/Departments/${'teste'}`, {
+export async function deleteDepartment(id: number) {
+  const response = await fetch(`${config.api_url}/Departments/${id}`, {
     method: 'DELETE'
   });
   revalidateTag('departments');
@@ -35,6 +34,16 @@ export async function getDepartments(search: string, offset: number) {
     newOffset: offset + 10,
     totalDepartments: filteredData.length
   };
+}
+
+export async function getDepartmentById(id: number) {
+  const response = await fetch(`${config.api_url}/Departments/${id}`, {
+    cache: 'force-cache',
+    next: { tags: ['departments'] }
+  });
+  const data = await response.json();
+
+  return data;
 }
 
 export async function addDepartment(name: string) {
