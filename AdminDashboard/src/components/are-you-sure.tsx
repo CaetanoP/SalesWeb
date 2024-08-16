@@ -43,10 +43,10 @@ export function AreYouSure({
           </AlertDialogFooter>
           <div
             data-loading={loading}
-            className="data-[loading=true]:h-7 h-0 transition-all duration-300 ease-linear rounded-b-md inset-x-2 overflow-hidden absolute top-[calc(100%+1px)] flex bg-primary -z-10 text-white justify-end items-center"
+            className="absolute inset-x-2 top-[calc(100%+1px)] -z-10 flex h-0 items-center justify-end overflow-hidden rounded-b-md bg-primary text-white transition-all duration-300 ease-linear data-[loading=true]:h-7"
           >
             <span className="me-3 text-sm">Loading...</span>
-            <Loader2 className="animate-spin w-4 h-4 me-3" />
+            <Loader2 className="me-3 h-4 w-4 animate-spin" />
           </div>
         </AlertDialogContent>
       </AlertDialog>

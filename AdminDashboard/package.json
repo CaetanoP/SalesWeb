@@ -46,13 +46,17 @@
     "arrowParens": "always",
     "singleQuote": true,
     "tabWidth": 2,
-    "trailingComma": "none"
+    "trailingComma": "none",
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@types/eslint__js": "^8.42.3",
     "eslint": "^9.9.0",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.1.0"
+    "typescript-eslint": "^8.1.0",
+    "prettier-plugin-tailwindcss": "^0.6.6"
   }
 }

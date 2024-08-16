@@ -1,3 +1,4 @@
+import { GitHubLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,13 +11,11 @@ import { signIn } from '@/lib/auth';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex justify-center items-start md:items-center p-8">
+    <div className="flex min-h-screen items-start justify-center p-8 md:items-center">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            This demo uses GitHub for authentication.
-          </CardDescription>
+          <CardDescription>Use GitHub for authentication.</CardDescription>
         </CardHeader>
         <CardFooter>
           <form
@@ -28,7 +27,10 @@ export default function LoginPage() {
             }}
             className="w-full"
           >
-            <Button className="w-full">Sign in with GitHub</Button>
+            <Button className="transition ease-in-out w-full hover:scale-105 active:scale-100">
+              <GitHubLogo color="white" className="me-3 h-4 w-4" />
+              Sign in with GitHub
+            </Button>
           </form>
         </CardFooter>
       </Card>
