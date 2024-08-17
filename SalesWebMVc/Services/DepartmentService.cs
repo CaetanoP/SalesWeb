@@ -6,6 +6,8 @@ using SalesWebMVc.Responses.DepartmentResponses;
 using SalesWebMVc.Services.Exceptions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using SalesWebMVc.Models.Validator;
+using System.Globalization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace SalesWebMVc.Services
 {
@@ -138,5 +140,94 @@ namespace SalesWebMVc.Services
 				throw new Exception("An error occurred while removing the department");
 			}
 		}
+		//Method to get all the sellers from a department by id
+		public async Task<List<Seller>> FindSellersAsync(int id)
+		{
+			try
+			{
+				var department = await _context.Department.Include(d => d.Sellers).FirstOrDefaultAsync(x => x.Id == id);
+				if (department is null)
+					throw new NotFoundException("Department not found");
+				if (department.Sellers.IsNullOrEmpty())
+					throw new NotFoundException("No sellers found for this department");
+				return department.Sellers.ToList();
+			}
+			catch (NotFoundException e)
+			{
+				throw new NotFoundException(e.Message);
+			}
+			catch (Exception e)
+			{
+				throw new Exception(e.Message);
+			}
+
+		}
+		//Method to get all sales from a department by id
+		public async Task<List<SalesRecord>> FindSalesAsync(int id)
+		{
+			//Include is used to get the sellers from the department
+			try
+			{
+				var department = await _context.Department.Include(d => d.Sellers).FirstOrDefaultAsync(x => x.Id == id);
+				if (department is null)
+					throw new NotFoundException("Department not found");
+
+				var sellers = department.Sellers.ToList();
+				List<SalesRecord> sales = new List<SalesRecord>();
+				foreach (var seller in sellers)
+				{
+					var salesRecord = await _context.SalesRecord.Where(x => x.SellerId == seller.Id).ToListAsync();
+					sales.AddRange(salesRecord);
+				}
+				if (sales.IsNullOrEmpty())
+					throw new NotFoundException("No sales found for this department");
+
+				return sales;
+			}
+			catch (NotFoundException e)
+			{
+				throw new NotFoundException(e.Message);
+			}
+			catch (Exception e)
+			{
+				throw new Exception(e.Message);
+			}
+
+		}
+		//Method to get the total sales value from a department by id
+		public async Task<string> TotalSalesAsync(int id)
+		{
+			try
+			{
+				var department = await _context.Department.Include(d => d.Sellers).FirstOrDefaultAsync(x => x.Id == id);
+				if (department is null)
+					throw new NotFoundException("Department not found");
+
+				var sellers = department.Sellers.ToList();
+				List<SalesRecord> sales = new List<SalesRecord>();
+				foreach (var seller in sellers)
+				{
+					var salesRecord = await _context.SalesRecord.Where(x => x.SellerId == seller.Id).ToListAsync();
+					sales.AddRange(salesRecord);
+				}
+				if(sales.IsNullOrEmpty())
+					throw new NotFoundException("No sales found for this department");
+
+				double totalSales = sales.Sum(x => x.Amount);
+				CultureInfo cultureBrazil = new CultureInfo("pt-BR");
+				string totalSalesFormatted = totalSales.ToString("C", cultureBrazil);
+				return totalSalesFormatted;
+
+			}
+			catch (NotFoundException e)
+			{
+				throw new NotFoundException(e.Message);
+			}
+			catch (Exception e)
+			{
+				throw new Exception(e.Message);
+			}
+		}
+		
 	}
 }

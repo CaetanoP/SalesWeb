@@ -49,6 +49,61 @@ namespace SalesWebMVc.Controllers
 
 			return response;
 		}
+		
+		[HttpGet("{id}/sellers")]
+		[SwaggerOperation(
+			Summary = "Obter todos os vendedores de um departamento",
+			Description = "Retorna todos os vendedores do departemento pelo id"
+		)]
+		[SwaggerResponse(200, "Vendedores encontrados", typeof(IEnumerable<Seller>))]
+		[SwaggerResponse(404, "Nenhum vendedor encontrado")]
+		public async Task<ActionResult<IEnumerable<Seller>>> GetSellers(int id)
+		{
+			var response = await _departmentService.FindSellersAsync(id);
+
+			return response;
+		}
+
+		[HttpGet("{id}/sales")]
+		[SwaggerOperation(
+			Summary = "Obter todas as vendas de um departamento",
+			Description = "Retorna todas as vendas do departamento pelo id"
+		)]
+		[SwaggerResponse(200, "Vendas encontradas", typeof(IEnumerable<SalesRecord>))]
+		[SwaggerResponse(404, "Nenhuma venda encontrada")]
+		public async Task<ActionResult<IEnumerable<SalesRecord>>> GetSales(int id)
+		{
+			var response = await _departmentService.FindSalesAsync(id);
+
+			return response;
+		}
+
+		[HttpGet("{id}/total-sales")]
+		[SwaggerOperation(
+			Summary = "Obter o total vendido pelo departamento",
+			Description = "Retorna o total em reais de vendas do departamento pelo id"
+		)]
+		[SwaggerResponse(200, "Total de vendas encontrado", typeof(string))]
+		[SwaggerResponse(404, "Nenhuma venda encontrada")]
+		public async Task<ActionResult<string>> GetTotalSales(int id)
+		{
+			var response = await _departmentService.TotalSalesAsync(id);
+
+			return response;
+		}
+		[HttpGet("{id}/cost")]
+		[SwaggerOperation(
+			Summary = "Obter o custo total do departamento",
+			Description = "Retorna o custo total em reais do departamento pelo id"
+		)]
+		[SwaggerResponse(200, "Custo total encontrado", typeof(string))]
+		[SwaggerResponse(404, "Nenhum custo encontrado")]
+		public async Task<ActionResult<string>> GetCost(int id)
+		{
+			var response = await _departmentService.CostAsync(id);
+
+			return response;
+		}
 
 		[HttpPost]
 		[SwaggerOperation(
